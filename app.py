@@ -1,4 +1,3 @@
-import hmac
 from textwrap import dedent
 
 import streamlit as st
@@ -54,15 +53,16 @@ APP_CSS = """
         background: rgba(255,255,255,.94);
         box-shadow: 0 30px 70px rgba(229, 91, 142, .13);
     }
-    div[data-testid="stTextInput"] input {
+    div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {
         border: 1px solid #f5c6d7;
         border-radius: 14px;
         text-align: center;
     }
-    div[data-testid="stTextInput"] input:focus {
+    div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
         border-color: #ed7fa7;
         box-shadow: 0 0 0 2px rgba(237,127,167,.15);
     }
+    div[data-testid="stNumberInput"] button { display: none; }
     div[data-testid="stFormSubmitButton"] button {
         width: 100%; border: 0; border-radius: 14px;
         color: white; font-weight: 700;
@@ -90,16 +90,19 @@ def login() -> bool:
         unsafe_allow_html=True,
     )
     with st.form("login_form"):
-        password = st.text_input(
+        password = st.number_input(
             "비밀번호",
-            type="password",
+            min_value=0,
+            max_value=9999,
+            value=None,
+            step=1,
             placeholder="비밀번호를 입력해주세요",
             label_visibility="collapsed",
         )
         submitted = st.form_submit_button("들어가기")
 
     if submitted:
-        if hmac.compare_digest(password, "0326"):
+        if password == 326:
             st.session_state.authenticated = True
             st.rerun()
         st.error("비밀번호가 맞지 않아요. 다시 확인해주세요.", icon="🌷")
@@ -130,9 +133,9 @@ button,input{font:inherit} button{cursor:pointer}.app{max-width:1180px;margin:0 
 .tasks{padding:30px 34px}.date-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.date-row h2{margin:0;font-size:24px}.today{padding:5px 11px;border-radius:999px;background:#ffe4ee;color:#d84f82;font-size:12px;font-weight:800}
 .progress-card{margin:26px 0 22px;padding:18px;border-radius:18px;background:#fff9fb;box-shadow:0 7px 18px rgba(211,107,147,.09)}.progress-label{display:flex;justify-content:space-between;color:#8b6c78;font-size:14px;font-weight:700}.progress-count{color:#d95787}.track{height:8px;margin-top:12px;border-radius:20px;background:#f5e8ed;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,#f3a0be,#df5f90);transition:width .25s}
 .section-title{display:flex;align-items:center;gap:8px;margin:20px 2px 10px;color:#5b424c;font-size:15px;font-weight:800}.section-title:first-of-type{margin-top:4px}.section-title small{color:#c18299;font-size:12px;font-weight:600}.section-title.sub{padding-top:6px;border-top:1px solid #f8e3eb}
-.list{display:flex;flex-direction:column;gap:9px}.item{display:flex;align-items:center;gap:13px;min-height:54px;padding:10px 12px;border:1px solid #fff0f5;border-radius:15px;background:white}.item.sub-item{background:#fff9fb;border-style:dashed}.check{flex:none;width:24px;height:24px;border:2px solid #e8a2bb;border-radius:50%;background:white;color:white;display:grid;place-items:center}.item.done .check{border-color:#e26392;background:#e26392}.item.done .check:after{content:"✓"}.item.done .text{text-decoration:line-through;color:#bba5ad}.text{flex:1}.sub-badge{flex:none;padding:3px 8px;border-radius:999px;background:#fff0f5;color:#c06b8a;font-size:11px;font-weight:700}
+.list{display:flex;flex-direction:column;gap:5px}.item{display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 10px;border:1px solid #fff0f5;border-radius:13px;background:white;font-size:14px}.item.sub-item{background:#fff9fb;border-style:dashed}.check{flex:none;width:20px;height:20px;border:2px solid #e8a2bb;border-radius:50%;background:white;color:white;display:grid;place-items:center;font-size:12px}.item.done .check{border-color:#e26392;background:#e26392}.item.done .check:after{content:"✓"}.item.done .text{text-decoration:line-through;color:#bba5ad}.text{flex:1}.sub-badge{flex:none;padding:2px 7px;border-radius:999px;background:#fff0f5;color:#c06b8a;font-size:10px;font-weight:700}
 .empty{text-align:center;padding:35px;color:#b69aa5}
-@media(max-width:860px){html,body{overflow:visible}.app{padding:8px 4px 42px}.hero{margin-bottom:16px}.hero h1{font-size:30px}.hero p{font-size:14px}.grid{grid-template-columns:1fr;gap:14px}.calendar,.tasks{padding:18px}.card{border-radius:22px}.cal-head{margin-bottom:16px}.cal-head h2,.date-row h2{font-size:20px}.progress-card{margin:16px 0 12px;padding:14px}.section-title{margin:13px 2px 7px}.section-title.sub{padding-top:4px}.list{gap:6px}.item{min-height:44px;padding:7px 10px}.day.has-items:after{bottom:4px}}
+@media(max-width:860px){html,body{overflow:visible}.app{padding:8px 4px 42px}.hero{margin-bottom:16px}.hero h1{font-size:30px}.hero p{font-size:14px}.grid{grid-template-columns:1fr;gap:14px}.calendar,.tasks{padding:18px}.card{border-radius:22px}.cal-head{margin-bottom:16px}.cal-head h2,.date-row h2{font-size:20px}.progress-card{margin:16px 0 12px;padding:14px}.section-title{margin:11px 2px 6px}.section-title.sub{padding-top:3px}.list{gap:4px}.item{min-height:34px;padding:4px 8px}.day.has-items:after{bottom:4px}}
 @media(max-width:430px){.calendar,.tasks{padding:16px 14px}.day{font-size:13px}.hero h1{font-size:27px}.hero p{padding:0 15px}.tasks{padding-bottom:22px}}
 </style>
 </head>
@@ -141,7 +144,7 @@ button,input{font:inherit} button{cursor:pointer}.app{max-width:1180px;margin:0 
   <header class="hero"><h1>🌸 오늘의 금복이 성장케어</h1><p>건강한 유진이와 금복이를 위한 영양소 보충<span class="heart">♡</span></p></header>
   <main class="grid">
     <section class="card calendar" aria-label="월간 캘린더">
-      <div class="cal-head"><button class="nav" id="prev" aria-label="이전 주로 이동">‹</button><h2 id="monthTitle"></h2><button class="nav" id="next" aria-label="다음 주로 이동">›</button></div>
+      <div class="cal-head"><button class="nav" id="prev" aria-label="이전 달로 이동">‹</button><h2 id="monthTitle"></h2><button class="nav" id="next" aria-label="다음 달로 이동">›</button></div>
       <div class="week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="days" id="days"></div>
     </section>
     <section class="card tasks" aria-label="할 일 체크리스트">
@@ -155,20 +158,19 @@ button,input{font:inherit} button{cursor:pointer}.app{max-width:1180px;margin:0 
   </main>
 </div>
 <script>
-const MAIN_ITEMS=['갑상선 약 1알','유산균 1알','엽산 1알','오메가3 알','철분제 1포','칼마디 2알','비타민D 1알'];
+const MAIN_ITEMS=['갑상선 약 1알','유산균 1알','엽산 1알','오메가3 1알','철분제 1포','칼마디 2알','비타민D 1알'];
 const SUB_ITEMS=['알긴엔액 1포','디클렉틴 1알'];
 const pad=n=>String(n).padStart(2,'0'); const key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const today=new Date(); today.setHours(0,0,0,0); let selected=new Date(today); let windowCenter=new Date(today);
+const today=new Date(); today.setHours(0,0,0,0); let selected=new Date(today); let view=new Date(today.getFullYear(),today.getMonth(),1);
 const STORAGE_KEY='geumboki-growth-care-v2';let data={};try{data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch(e){data={}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
-function itemsFor(d){const k=key(d);if(!data[k])data[k]=[...MAIN_ITEMS.map((text,i)=>({id:`m${i}`,text,type:'main',done:false})),...SUB_ITEMS.map((text,i)=>({id:`s${i}`,text,type:'sub',done:false}))];return data[k]}
-function weekStart(d){const start=new Date(d);start.setDate(start.getDate()-start.getDay());start.setHours(0,0,0,0);return start}
-function renderCalendar(){const start=weekStart(windowCenter);start.setDate(start.getDate()-7);const end=new Date(start);end.setDate(start.getDate()+20);document.getElementById('monthTitle').textContent=`${pad(start.getMonth()+1)}월 ${start.getDate()}일 – ${pad(end.getMonth()+1)}월 ${end.getDate()}일`;const root=document.getElementById('days');root.innerHTML='';for(let i=0;i<21;i++){const d=new Date(start);d.setDate(start.getDate()+i);const b=document.createElement('button');b.type='button';b.className='day';b.textContent=d.getDate();b.setAttribute('aria-label',`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`);if(key(d)===key(selected))b.classList.add('selected');if(data[key(d)]?.some(x=>x.done))b.classList.add('has-items');b.onclick=()=>{selected=d;windowCenter=new Date(d);render()};root.appendChild(b)}}
+function itemsFor(d){const k=key(d),existing=data[k]||[],template=[...MAIN_ITEMS.map((text,i)=>({id:`m${i}`,text,type:'main'})),...SUB_ITEMS.map((text,i)=>({id:`s${i}`,text,type:'sub'}))];data[k]=template.map(item=>({...item,done:existing.find(old=>old.id===item.id)?.done||false}));return data[k]}
+function renderCalendar(){document.getElementById('monthTitle').textContent=`${view.getFullYear()}년 ${pad(view.getMonth()+1)}월`;const root=document.getElementById('days');root.innerHTML='';const first=new Date(view.getFullYear(),view.getMonth(),1),start=new Date(first);start.setDate(1-first.getDay());for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const b=document.createElement('button');b.type='button';b.className='day';b.textContent=d.getDate();b.setAttribute('aria-label',`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`);if(d.getMonth()!==view.getMonth())b.classList.add('muted');if(key(d)===key(selected))b.classList.add('selected');if(data[key(d)]?.some(x=>x.done))b.classList.add('has-items');b.onclick=()=>{selected=d;view=new Date(d.getFullYear(),d.getMonth(),1);render()};root.appendChild(b)}}
 function renderItem(item,root){const row=document.createElement('div');row.className='item'+(item.done?' done':'')+(item.type==='sub'?' sub-item':'');const check=document.createElement('button');check.type='button';check.className='check';check.setAttribute('aria-label',`${item.text} ${item.done?'완료 취소':'완료 표시'}`);check.onclick=()=>{item.done=!item.done;save();renderTasks();renderCalendar();requestHeight()};const text=document.createElement('span');text.className='text';text.textContent=item.text;row.append(check,text);if(item.type==='sub'){const badge=document.createElement('span');badge.className='sub-badge';badge.textContent='SUB';row.appendChild(badge)}root.appendChild(row)}
 function renderTasks(){const items=itemsFor(selected),main=items.filter(x=>x.type==='main'),sub=items.filter(x=>x.type==='sub');document.getElementById('dateTitle').textContent=`${selected.getFullYear()}년 ${pad(selected.getMonth()+1)}월 ${pad(selected.getDate())}일`;document.getElementById('todayBadge').style.display=key(selected)===key(today)?'inline-block':'none';const done=main.filter(x=>x.done).length,pct=Math.round(done/main.length*100);document.getElementById('progressText').textContent=`${done} / ${main.length} (${pct}%)`;document.getElementById('bar').style.width=pct+'%';const mainRoot=document.getElementById('mainList'),subRoot=document.getElementById('subList');mainRoot.innerHTML='';subRoot.innerHTML='';main.forEach(item=>renderItem(item,mainRoot));sub.forEach(item=>renderItem(item,subRoot))}
 function requestHeight(){setTimeout(()=>window.parent.postMessage({isStreamlitMessage:true,type:'streamlit:setFrameHeight',height:document.documentElement.scrollHeight+24},'*'),50)}
 function render(){renderCalendar();renderTasks();requestHeight()}
-document.getElementById('prev').onclick=()=>{windowCenter.setDate(windowCenter.getDate()-7);renderCalendar()};document.getElementById('next').onclick=()=>{windowCenter.setDate(windowCenter.getDate()+7);renderCalendar()};window.addEventListener('load',requestHeight);window.addEventListener('resize',requestHeight);render();save();
+document.getElementById('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);renderCalendar()};document.getElementById('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);renderCalendar()};window.addEventListener('load',requestHeight);window.addEventListener('resize',requestHeight);render();save();
 </script>
 </body></html>
 """)
