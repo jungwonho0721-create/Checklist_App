@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="날짜별 할 일을 편리하게 관리하고 성취도를 확인하는 직관적이고 아름다운 월간 캘린더 기반의 체크리스트 앱입니다.">
+  <title>오늘의 체크리스트 | 캘린더 기반 할 일 관리</title>
+  
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome for Premium Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* -------------------------------------------------------------
+       1. Design System & CSS Variables
+       ------------------------------------------------------------- */
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-dark: #4f46e5;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --success: #10b981;
+      --success-light: rgba(16, 185, 129, 0.1);
+      --warning: #f59e0b;
+      --warning-light: rgba(245, 158, 11, 0.1);
+      --danger: #ef4444;
+      --danger-light: rgba(239, 68, 68, 0.1);
+      
+      /* Glassmorphism & Soft Background Palette */
+      --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      --card-bg: rgba(255, 255, 255, 0.78);
+      --card-border: rgba(255, 255, 255, 0.5);
+      --input-bg: rgba(255, 255, 255, 0.85);
+      
+      /* Typography & Neutrals */
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      
+      /* Effects */
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(31, 38, 135, 0.06), 0 8px 10px -6px rgba(31, 38, 135, 0.04);
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 28px;
+      
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* -------------------------------------------------------------
+       2. Base Reset & Layout
+       ------------------------------------------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent; /* Remove mobile gray tap highlight */
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(16px, 4vw, 40px);
+      position: relative;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* Floating background decoration */
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: 0;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .bg-circle-1 {
+      width: clamp(250px, 40vw, 450px);
+      height: clamp(250px, 40vw, 450px);
+      background: #c7d2fe;
+      top: -100px;
+      left: -100px;
+      animation: float-slow 15s infinite ease-in-out alternate;
+    }
+    .bg-circle-2 {
+      width: clamp(300px, 50vw, 550px);
+      height: clamp(300px, 50vw, 550px);
+      background: #ddd6fe;
+      bottom: -150px;
+      right: -100px;
+      animation: float-slow 20s infinite ease-in-out alternate-reverse;
+    }
+
+    @keyframes float-slow {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, 40px) scale(1.1); }
+    }
+
+    /* App Container */
+    .app-container {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(18px, 3vw, 28px);
+      z-index: 10;
+    }
+
+    /* -------------------------------------------------------------
+       3. Header Styling (Fluid & Animated)
+       ------------------------------------------------------------- */
+    .app-header {
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .app-header h1 {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      transition: var(--transition);
+    }
+
+    .app-header h1 i {
+      font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: pulse-gear 6s infinite ease-in-out;
+    }
+
+    @keyframes pulse-gear {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(10deg); }
+    }
+
+    .app-subtitle {
+      color: var(--text-muted);
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      font-weight: 400;
+    }
+
+    /* -------------------------------------------------------------
+       4. Main Content Grid (Fluid Layout)
+       ------------------------------------------------------------- */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: clamp(16px, 3vw, 28px);
+      align-items: start;
+    }
+
+    /* Glassmorphism Card Base */
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: clamp(20px, 4vw, 32px);
+      transition: var(--transition);
+    }
+
+    .glass-card:hover {
+      box-shadow: 0 25px 35px -5px rgba(31, 38, 135, 0.08), 0 12px 15px -6px rgba(31, 38, 135, 0.06);
+      transform: translateY(-2px);
+    }
+
+    /* -------------------------------------------------------------
+       5. Calendar Component CSS
+       ------------------------------------------------------------- */
+    .calendar-widget {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      /* overflow: hidden removed — was clipping the 7th column (Saturday) */
+    }
+
+    .calendar-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calendar-navbar h2 {
+      font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+      font-weight: 700;
+      color: var(--text-main);
+      user-select: none;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      width: clamp(38px, 8vw, 42px);
+      height: clamp(38px, 8vw, 42px);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: scale(1.08);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* .calendar-grid removed — unified grid is now used directly */
+
+    /* Single unified grid: weekday headers + day cells share the same column widths */
+    .calendar-unified-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      row-gap: clamp(6px, 1.5vw, 10px);
+      column-gap: 6px;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Slide animation applied to the whole unified grid */
+    .calendar-unified-grid.slide-left {
+      animation: slide-in-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .calendar-unified-grid.slide-right {
+      animation: slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slide-in-left {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slide-in-right {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .weekday {
+      font-weight: 700;
+      font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      padding-bottom: 2px;
+      user-select: none;
+    }
+
+    .weekday.sun { color: var(--danger); }
+    .weekday.sat { color: var(--primary); }
+
+    /* Day Cell - Touch Target Friendly */
+    .day-cell {
+      aspect-ratio: 1;
+      min-height: clamp(36px, 8.5vw, 46px); /* Guarantees comfortable touch size */
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(0.85rem, 2vw, 0.95rem);
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .day-cell:hover:not(.empty-cell) {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary-dark);
+      transform: scale(1.06);
+    }
+
+    .day-cell:active:not(.empty-cell) {
+      transform: scale(0.92);
+      background: rgba(99, 102, 241, 0.2);
+    }
+
+    .empty-cell {
+      cursor: default;
+    }
+
+    /* Other month cells (grayed out) */
+    .other-month {
+      color: var(--text-light);
+      font-weight: 400;
+      opacity: 0.5;
+    }
+
+    /* Today highlight */
+    .day-cell.today-cell {
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+
+    /* Selected Date highlight */
+    .day-cell.selected-cell {
+      background: var(--primary-gradient) !important;
+      color: white !important;
+      box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
+      font-weight: 700;
+    }
+
+    .day-cell.selected-cell.today-cell {
+      border-color: transparent;
+    }
+
+    .day-cell.selected-cell.other-month {
+      opacity: 1;
+    }
+
+    /* Completion Dots wrapper */
+    .status-dots {
+      position: absolute;
+      bottom: clamp(3px, 1vw, 5px);
+      display: flex;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .status-dot {
+      width: clamp(4px, 1vw, 5px);
+      height: clamp(4px, 1vw, 5px);
+      border-radius: 50%;
+      animation: scale-up 0.2s ease-out;
+    }
+
+    .status-dot.all-done {
+      background-color: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .status-dot.partial-done {
+      background-color: var(--warning);
+      box-shadow: 0 0 6px var(--warning);
+    }
+
+    /* Highlight color adjustment for active dots when selected */
+    .day-cell.selected-cell .status-dot {
+      background-color: white;
+      box-shadow: none;
+    }
+
+    @keyframes scale-up {
+      from { transform: scale(0); }
+      to { transform: scale(1); }
+    }
+
+    /* -------------------------------------------------------------
+       6. Checklist Component CSS
+       ------------------------------------------------------------- */
+    .checklist-widget {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* Header info & Today Badge */
+    .checklist-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .date-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .date-title-group h2 {
+      font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .today-badge {
+      background: var(--primary-gradient);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 50px;
+      box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+      letter-spacing: 0.5px;
+      animation: pop-in 0.3s ease;
+    }
+
+    /* Progress UI */
+    .progress-panel {
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .progress-info .label {
+      color: var(--text-muted);
+    }
+
+    .progress-info .ratio {
+      color: var(--primary-dark);
+      background: rgba(99, 102, 241, 0.08);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary-gradient);
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Task Add Form */
+    .add-form {
+      display: flex;
+      gap: 12px;
+    }
+
+    .add-input {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      outline: none;
+      border-radius: var(--radius-md);
+      padding: clamp(12px, 3vw, 16px) 20px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.015);
+      transition: var(--transition);
+    }
+
+    .add-input:focus {
+      background: white;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+
+    .add-btn {
+      background: var(--primary-gradient);
+      border: none;
+      width: clamp(48px, 10vw, 54px);
+      height: clamp(48px, 10vw, 54px);
+      border-radius: var(--radius-md);
+      color: white;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    .add-btn:hover {
+      transform: scale(1.04);
+    }
+
+    .add-btn:active {
+      transform: scale(0.94);
+    }
+
+    /* Checklist List Container */
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch; /* Butter-smooth scrolling on iOS */
+    }
+
+    /* Customized scrollbar for list container */
+    .task-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .task-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .task-list::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 10px;
+    }
+
+    /* Individual Checklist Item */
+    .task-item {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-md);
+      padding: clamp(12px, 3vw, 16px) 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      transition: var(--transition);
+      animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    }
+
+    .task-item:hover {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .task-item:active {
+      transform: scale(0.98);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .task-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .checkbox-icon {
+      font-size: 1.3rem;
+      color: var(--text-light);
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .task-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-main);
+      transition: var(--transition);
+      word-break: break-all;
+    }
+
+    /* Delete Button */
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+      padding: clamp(8px, 2vw, 12px); /* Ensures large touch hit-box */
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .delete-btn:hover {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .delete-btn:active {
+      transform: scale(0.85);
+    }
+
+    /* Completed state styling */
+    .task-item.completed {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .task-item.completed .checkbox-icon {
+      color: var(--success);
+      animation: check-pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.3);
+    }
+
+    .task-item.completed .task-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      opacity: 0.65;
+    }
+
+    /* Task exit animation class */
+    .task-item.exit-animation {
+      animation: pop-out 0.25s ease forwards;
+    }
+
+    /* Empty state display */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: pop-in 0.4s ease;
+    }
+
+    .empty-state i {
+      font-size: clamp(2.5rem, 6vw, 3.2rem);
+      background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* -------------------------------------------------------------
+       7. Interactive Animations
+       ------------------------------------------------------------- */
+    @keyframes pop-in {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes pop-out {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.85); height: 0; padding-top: 0; padding-bottom: 0; margin: 0; border: none; }
+    }
+
+    @keyframes check-pop {
+      0% { transform: scale(0.7) rotate(-15deg); }
+      70% { transform: scale(1.3) rotate(10deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    /* -------------------------------------------------------------
+       8. Responsive media queries (Mobile UI Refinement)
+       ------------------------------------------------------------- */
+    @media (max-width: 768px) {
+      body {
+        align-items: flex-start; /* Stack starts naturally on mobile top */
+      }
+
+      .app-container {
+        gap: 16px;
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .glass-card {
+        border-radius: var(--radius-md);
+      }
+
+      /* Reduce gaps slightly for screen efficiency */
+      .calendar-unified-grid {
+        row-gap: 6px;
+        column-gap: 4px;
+      }
+      
+      .day-cell {
+        min-height: 38px;
+      }
+      
+      .status-dots {
+        bottom: 2px;
+      }
+
+      .task-list {
+        max-height: 340px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic blurred background circles -->
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <div class="app-container">
+    <!-- Main App Header -->
+    <header class="app-header">
+      <h1><i class="fa-solid fa-calendar-check"></i> 오늘의 체크리스트</h1>
+      <p class="app-subtitle">체크리스트를 날짜별로 계획하고 관리해보세요.</p>
+    </header>
+
+    <!-- App Content Layout Grid -->
+    <main class="main-grid">
+      
+      <!-- Left side: Interactive Calendar Card -->
+      <section class="glass-card calendar-widget" aria-label="월간 캘린더">
+        <div class="calendar-navbar">
+          <button id="prev-month-btn" class="nav-btn" aria-label="이전 달로 이동">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <h2 id="calendar-month-year">2026년 06월</h2>
+          <button id="next-month-btn" class="nav-btn" aria-label="다음 달로 이동">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Single unified grid: weekday headers + day cells share the exact same 7-column layout -->
+        <div id="calendar-days-container" class="calendar-unified-grid">
+          <div class="weekday sun">일</div>
+          <div class="weekday">월</div>
+          <div class="weekday">화</div>
+          <div class="weekday">수</div>
+          <div class="weekday">목</div>
+          <div class="weekday">금</div>
+          <div class="weekday">토</div>
+          <!-- Day cells are injected here by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Right side: Date Checklist Card -->
+      <section class="glass-card checklist-widget" aria-label="할 일 체크리스트">
+        
+        <div class="checklist-header-wrapper">
+          <div class="checklist-meta">
+            <div class="date-title-group">
+              <h2 id="checklist-selected-date">2026년 06월 21일</h2>
+              <span id="checklist-today-badge" class="today-badge">TODAY</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completion status & progress bar -->
+        <div class="progress-panel">
+          <div class="progress-info">
+            <span class="label">오늘의 성취도</span>
+            <span id="progress-text-ratio" class="ratio">0 / 0 (0%)</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="progress-bar-indicator" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Add task form -->
+        <form id="add-task-form" class="add-form" autocomplete="off">
+          <input type="text" id="task-input-field" class="add-input" placeholder="새로운 체크리스트 항목을 입력하세요..." required>
+          <button type="submit" class="add-btn" aria-label="체크리스트 항목 추가">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </form>
+
+        <!-- List items container -->
+        <ul id="task-list-items" class="task-list"></ul>
+      </section>
+      
+    </main>
+  </div>
+
+  <!-- -------------------------------------------------------------
+       9. Pure JavaScript Application Logic
+       ------------------------------------------------------------- -->
+  <script>
+    // Storage namespace key
+    const LOCAL_STORAGE_KEY = 'checklist_app_data';
+
+    // State Variables
+    let checklistData = {}; // Format: { 'YYYY-MM-DD': [ { id, text, completed }, ... ] }
+    let selectedDate = new Date(); // Date currently selected for display
+    // Always anchor calendarDate to the 1st to prevent day-overflow when navigating months
+    let calendarDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+    // DOM Elements
+    const calendarMonthYearText = document.getElementById('calendar-month-year');
+    const calendarDaysContainer = document.getElementById('calendar-days-container');
+    const prevMonthBtn = document.getElementById('prev-month-btn');
+    const nextMonthBtn = document.getElementById('next-month-btn');
+
+    const checklistSelectedDateText = document.getElementById('checklist-selected-date');
+    const checklistTodayBadge = document.getElementById('checklist-today-badge');
+    const progressTextRatio = document.getElementById('progress-text-ratio');
+    const progressBarIndicator = document.getElementById('progress-bar-indicator');
+    const addTaskForm = document.getElementById('add-task-form');
+    const taskInputField = document.getElementById('task-input-field');
+    const taskListItems = document.getElementById('task-list-items');
+
+    /* -------------------------------------------------------------
+       Helper Functions
+       ------------------------------------------------------------- */
+    // Convert Date object to YYYY-MM-DD string representation in local timezone
+    function getFormattedDateString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Convert Date object to readable Korean date string
+    function getKoreanDateString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}년 ${month}월 ${day}일`;
+    }
+
+    // HTML sanitization helper to prevent XSS issues
+    function sanitizeHtml(str) {
+      return str.replace(/[&<>"']/g, function(match) {
+        const escapeMap = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#x27;'
+        };
+        return escapeMap[match];
+      });
+    }
+
+    /* -------------------------------------------------------------
+       Data Store Synchronization (LocalStorage)
+       ------------------------------------------------------------- */
+    function loadDataFromStorage() {
+      try {
+        const serializedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (serializedData) {
+          checklistData = JSON.parse(serializedData);
+        } else {
+          checklistData = {};
+        }
+      } catch (e) {
+        console.error("Failed to parse data from localStorage, initializing empty state.", e);
+        checklistData = {};
+      }
+    }
+
+    function saveDataToStorage() {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(checklistData));
+      } catch (e) {
+        console.error("Failed to save data to localStorage.", e);
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Calendar Rendering System (with Slide Transition)
+       ------------------------------------------------------------- */
+    function renderCalendar(direction = null) {
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+
+      buildCalendarGrid(year, month);
+
+      // Apply slide animation by toggling class after build
+      if (direction) {
+        calendarDaysContainer.classList.remove('slide-left', 'slide-right');
+        // Force reflow so the class re-triggers animation
+        void calendarDaysContainer.offsetWidth;
+        calendarDaysContainer.classList.add(direction === 'left' ? 'slide-left' : 'slide-right');
+      }
+    }
+
+    // Build the day cells inside the unified grid (weekday headers are already in HTML)
+    function buildCalendarGrid(year, month) {
+      calendarMonthYearText.textContent = `${year}년 ${String(month + 1).padStart(2, '0')}월`;
+
+      // Remove only .day-cell elements — preserve the 7 weekday header divs
+      calendarDaysContainer.querySelectorAll('.day-cell').forEach(el => el.remove());
+
+      const today = new Date();
+      const todayString = getFormattedDateString(today);
+      const selectedString = getFormattedDateString(selectedDate);
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+      const prevLastDate = new Date(year, month, 0).getDate();
+      const totalSlots = 42; // Always keep a 6-week layout for visual consistency
+
+      for (let i = 1; i <= totalSlots; i++) {
+        const dayCell = document.createElement('div');
+        dayCell.classList.add('day-cell');
+
+        let cellDate;
+        let isCurrentMonth = true;
+
+        if (i <= firstDayIndex) {
+          const prevDay = prevLastDate - (firstDayIndex - i);
+          dayCell.classList.add('other-month');
+          dayCell.textContent = prevDay;
+          cellDate = new Date(year, month - 1, prevDay);
+          isCurrentMonth = false;
+        } else if (i > firstDayIndex + lastDate) {
+          const nextDay = i - (firstDayIndex + lastDate);
+          dayCell.classList.add('other-month');
+          dayCell.textContent = nextDay;
+          cellDate = new Date(year, month + 1, nextDay);
+          isCurrentMonth = false;
+        } else {
+          const currentDay = i - firstDayIndex;
+          dayCell.textContent = currentDay;
+          cellDate = new Date(year, month, currentDay);
+        }
+
+        const dateStr = getFormattedDateString(cellDate);
+
+        if (dateStr === todayString) {
+          dayCell.classList.add('today-cell');
+        }
+        if (dateStr === selectedString) {
+          dayCell.classList.add('selected-cell');
+        }
+
+        renderCellStatusDots(dayCell, dateStr);
+
+        dayCell.addEventListener('click', () => {
+          selectedDate = cellDate;
+          
+          if (!isCurrentMonth) {
+            // Smoothly swap month if clicking adjacent month dates
+            const direction = cellDate > new Date(year, month, 15) ? 'left' : 'right';
+            calendarDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), 1);
+            renderCalendar(direction);
+          } else {
+            renderCalendar();
+          }
+          renderChecklist();
+        });
+
+        calendarDaysContainer.appendChild(dayCell);
+      }
+    }
+
+    // Render completion dot indicators
+    function renderCellStatusDots(dayCell, dateStr) {
+      const tasks = checklistData[dateStr] || [];
+      if (tasks.length === 0) return;
+
+      const dotsWrapper = document.createElement('div');
+      dotsWrapper.classList.add('status-dots');
+
+      const dot = document.createElement('span');
+      dot.classList.add('status-dot');
+
+      const completedCount = tasks.filter(t => t.completed).length;
+
+      if (completedCount === tasks.length) {
+        dot.classList.add('all-done');
+        dayCell.setAttribute('aria-label', `할 일 전부 완료`);
+      } else if (completedCount > 0) {
+        dot.classList.add('partial-done');
+        dayCell.setAttribute('aria-label', `할 일 일부 진행됨`);
+      }
+
+      if (completedCount > 0) {
+        dotsWrapper.appendChild(dot);
+        dayCell.appendChild(dotsWrapper);
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Checklist Rendering & Controller System
+       ------------------------------------------------------------- */
+    function renderChecklist() {
+      const selectedStr = getFormattedDateString(selectedDate);
+      const todayStr = getFormattedDateString(new Date());
+
+      checklistSelectedDateText.textContent = getKoreanDateString(selectedDate);
+
+      if (selectedStr === todayStr) {
+        checklistTodayBadge.style.display = 'inline-block';
+      } else {
+        checklistTodayBadge.style.display = 'none';
+      }
+
+      const tasks = checklistData[selectedStr] || [];
+      taskListItems.innerHTML = '';
+
+      const totalCount = tasks.length;
+      const completedCount = tasks.filter(t => t.completed).length;
+      const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+      progressTextRatio.textContent = `${completedCount} / ${totalCount} (${progressPercent}%)`;
+      progressBarIndicator.style.width = `${progressPercent}%`;
+      progressBarIndicator.parentNode.setAttribute('aria-valuenow', progressPercent);
+
+      if (totalCount === 0) {
+        taskListItems.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-regular fa-clipboard"></i>
+            <p>등록된 체크리스트가 없습니다.</p>
+            <p style="font-size: 0.8rem; opacity:0.8;">새로운 항목을 추가해 일정을 시작해보세요!</p>
+          </div>
+        `;
+        return;
+      }
+
+      tasks.forEach(task => {
+        const itemLi = document.createElement('li');
+        itemLi.classList.add('task-item');
+        if (task.completed) {
+          itemLi.classList.add('completed');
+        }
+
+        itemLi.innerHTML = `
+          <div class="task-content">
+            <i class="checkbox-icon fa-regular ${task.completed ? 'fa-circle-check' : 'fa-circle'}"></i>
+            <span class="task-text">${sanitizeHtml(task.text)}</span>
+          </div>
+          <button class="delete-btn" aria-label="항목 삭제">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        `;
+
+        // Toggle state click
+        itemLi.addEventListener('click', (e) => {
+          if (e.target.closest('.delete-btn')) return;
+          toggleTaskStatus(selectedStr, task.id);
+        });
+
+        // Delete click with animation
+        const deleteButton = itemLi.querySelector('.delete-btn');
+        deleteButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          itemLi.classList.add('exit-animation');
+          // Wait for CSS scale/fade animation to complete before removing from state
+          itemLi.addEventListener('animationend', () => {
+            deleteTask(selectedStr, task.id);
+          });
+        });
+
+        taskListItems.appendChild(itemLi);
+      });
+    }
+
+    /* -------------------------------------------------------------
+       Checklist Item CRUD Event Handlers
+       ------------------------------------------------------------- */
+    function addTask(text) {
+      if (!text.trim()) return;
+
+      const dateStr = getFormattedDateString(selectedDate);
+      if (!checklistData[dateStr]) {
+        checklistData[dateStr] = [];
+      }
+
+      const newTask = {
+        id: Date.now() + Math.random().toString(36).substr(2, 5),
+        text: text.trim(),
+        completed: false
+      };
+
+      checklistData[dateStr].push(newTask);
+      
+      saveDataToStorage();
+      renderChecklist();
+      renderCalendar();
+    }
+
+    function toggleTaskStatus(dateStr, taskId) {
+      const tasks = checklistData[dateStr] || [];
+      const taskIndex = tasks.findIndex(t => t.id === taskId);
+
+      if (taskIndex !== -1) {
+        tasks[taskIndex].completed = !tasks[taskIndex].completed;
+        saveDataToStorage();
+        renderChecklist();
+        renderCalendar();
+      }
+    }
+
+    function deleteTask(dateStr, taskId) {
+      let tasks = checklistData[dateStr] || [];
+      tasks = tasks.filter(t => t.id !== taskId);
+
+      if (tasks.length === 0) {
+        delete checklistData[dateStr];
+      } else {
+        checklistData[dateStr] = tasks;
+      }
+
+      saveDataToStorage();
+      renderChecklist();
+      renderCalendar();
+    }
+
+    /* -------------------------------------------------------------
+       Application Startup and Event Listeners
+       ------------------------------------------------------------- */
+    // Navigation boundaries: June 2026 ~ December 2026
+    const MIN_MONTH = new Date(2026, 5, 1); // June 2026
+    const MAX_MONTH = new Date(2026, 11, 1); // December 2026
+
+    function updateNavButtons() {
+      const y = calendarDate.getFullYear();
+      const m = calendarDate.getMonth();
+      prevMonthBtn.disabled = (y === 2026 && m === 5); // Disable at June 2026
+      nextMonthBtn.disabled = (y === 2026 && m === 11); // Disable at December 2026
+      prevMonthBtn.style.opacity = prevMonthBtn.disabled ? '0.3' : '1';
+      nextMonthBtn.style.opacity = nextMonthBtn.disabled ? '0.3' : '1';
+    }
+
+    prevMonthBtn.addEventListener('click', () => {
+      const next = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+      if (next >= MIN_MONTH) {
+        calendarDate = next;
+        renderCalendar('right');
+        updateNavButtons();
+      }
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      const next = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+      if (next <= MAX_MONTH) {
+        calendarDate = next;
+        renderCalendar('left');
+        updateNavButtons();
+      }
+    });
+
+    addTaskForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      addTask(taskInputField.value);
+      taskInputField.value = '';
+      taskInputField.focus();
+    });
+
+    /* -------------------------------------------------------------
+       Data Seeding: 6/21 ~ 12/31 2026에 7개 기본 항목 채우기
+       최초 1회만 실행 (localStorage 'seeded_v1' 플래그로 중복 방지)
+       ------------------------------------------------------------- */
+    const SEED_FLAG_KEY = 'checklist_seeded_v1';
+
+    // 7개 템플릿 항목 (텍스트만 정의, ID는 날짜별로 새로 생성)
+    const TEMPLATE_TASKS = [
+      '아침 스트레칭 10분',
+      '물 2L 마시기',
+      '오늘 업무 목표 3가지 정리',
+      '점심 후 산책 20분',
+      '집중 업무 블록 2시간',
+      '독서 또는 학습 30분',
+      '하루 일기 & 내일 계획 작성',
+    ];
+
+    function seedInitialData() {
+      // 이미 시드된 경우 스킵
+      if (localStorage.getItem(SEED_FLAG_KEY)) return;
+
+      const start = new Date(2026, 5, 21);  // 2026-06-21
+      const end   = new Date(2026, 11, 31); // 2026-12-31
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = getFormattedDateString(new Date(d));
+        // 이미 해당 날짜 데이터가 있으면 덮어쓰지 않음
+        if (checklistData[dateStr] && checklistData[dateStr].length > 0) continue;
+
+        checklistData[dateStr] = TEMPLATE_TASKS.map((text, idx) => ({
+          id: `seed_${dateStr}_${idx}`,
+          text,
+          completed: false,
+        }));
+      }
+
+      saveDataToStorage();
+      localStorage.setItem(SEED_FLAG_KEY, '1');
+    }
+
+    // App Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDataFromStorage();
+      seedInitialData();   // 최초 1회 기본 데이터 채우기
+      renderCalendar();
+      renderChecklist();
+      updateNavButtons();
+    });
+  </script>
+</body>
+</html>
