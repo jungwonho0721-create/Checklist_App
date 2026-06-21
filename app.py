@@ -1,41 +1,184 @@
-import streamlit as st
+from textwrap import dedent
 
-# 1. Page Configuration
+import streamlit as st
+import streamlit.components.v1 as components
+
+
 st.set_page_config(
-    page_title="오늘의 체크리스트",
-    page_icon="📅",
+    page_title="금복이 성장소",
+    page_icon="🌸",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
-# 2. Hide standard Streamlit header/footer and pad iframe to full screen
-hide_style = """
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    div.block-container {
-        padding: 0;
-        max-width: 100%;
-        height: 100vh;
+
+APP_CSS = """
+<style>
+    [data-testid="stHeader"], [data-testid="stToolbar"],
+    [data-testid="stDecoration"], #MainMenu, footer { display: none !important; }
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(145deg, #fff 0%, #fff8fb 48%, #ffeaf2 100%);
     }
-    iframe {
-        width: 100% !important;
-        height: 100vh !important;
-        border: none;
+    [data-testid="stMainBlockContainer"] {
+        max-width: 1240px;
+        padding: 1.4rem 1rem 0;
     }
-    </style>
+    iframe { border: 0; }
+    .login-wrap {
+        min-height: 78vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-card {
+        width: min(440px, 92vw);
+        margin: 9vh auto 1.4rem;
+        padding: 2.4rem 2rem 1.5rem;
+        text-align: center;
+        border: 1px solid #ffe1ec;
+        border-radius: 30px;
+        background: rgba(255,255,255,.94);
+        box-shadow: 0 22px 70px rgba(229, 91, 142, .16);
+    }
+    .login-flower { font-size: 3.2rem; margin-bottom: .45rem; }
+    .login-title { color: #d94f83; font-size: 2rem; font-weight: 800; margin: 0; }
+    .login-copy { color: #8d6d79; margin: .65rem 0 0; }
+    div[data-testid="stForm"] {
+        width: min(440px, 92vw);
+        margin: 0 auto;
+        padding: 0 2rem 2.2rem;
+        border: 1px solid #ffe1ec;
+        border-top: 0;
+        border-radius: 0 0 30px 30px;
+        background: rgba(255,255,255,.94);
+        box-shadow: 0 30px 70px rgba(229, 91, 142, .13);
+    }
+    div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input {
+        border: 1px solid #f5c6d7;
+        border-radius: 14px;
+        text-align: center;
+    }
+    div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus {
+        border-color: #ed7fa7;
+        box-shadow: 0 0 0 2px rgba(237,127,167,.15);
+    }
+    div[data-testid="stNumberInput"] button { display: none; }
+    div[data-testid="stFormSubmitButton"] button {
+        width: 100%; border: 0; border-radius: 14px;
+        color: white; font-weight: 700;
+        background: linear-gradient(135deg, #f08bb1, #df5f90);
+    }
+    div[data-testid="stAlert"] { width: min(440px, 92vw); margin: .7rem auto; }
+</style>
 """
-st.markdown(hide_style, unsafe_allow_html=True)
 
-# 3. Read index.html content
-try:
-    with open("index.html", "r", encoding="utf-8") as f:
-        html_code = f.read()
-    
-    # 4. Render HTML inside Streamlit Component
-    # We set a large height (1000px) and scrolling=True to fit the design comfortably on mobile and desktop
-    st.components.v1.html(html_code, height=1000, scrolling=True)
+st.markdown(APP_CSS, unsafe_allow_html=True)
 
-except FileNotFoundError:
-    st.error("index.html 파일을 찾을 수 없습니다. 경로를 확인해주세요.")
+
+def login() -> bool:
+    if st.session_state.get("authenticated"):
+        return True
+
+    st.markdown(
+        """
+        <div class="login-card">
+            <div class="login-flower">🌸</div>
+            <h1 class="login-title">금복이 성장소</h1>
+            <p class="login-copy">금복이의 소중한 성장 기록을 만나보세요.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    with st.form("login_form"):
+        password = st.number_input(
+            "비밀번호",
+            min_value=0,
+            max_value=9999,
+            value=None,
+            step=1,
+            placeholder="비밀번호를 입력해주세요",
+            label_visibility="collapsed",
+        )
+        submitted = st.form_submit_button("들어가기")
+
+    if submitted:
+        if password == 326:
+            st.session_state.authenticated = True
+            st.rerun()
+        st.error("비밀번호가 맞지 않아요. 다시 확인해주세요.", icon="🌷")
+    return False
+
+
+if not login():
+    st.stop()
+
+
+html = dedent(r"""
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#392b31;background:transparent}
+button,input{font:inherit} button{cursor:pointer}.app{max-width:1180px;margin:0 auto;padding:16px 8px 30px}
+.hero{text-align:center;margin:4px 0 30px}.hero h1{margin:0;color:#df5f90;font-size:40px;letter-spacing:-2px}.hero p{margin:10px 0 0;color:#8d6d79;font-size:16px}.heart{color:#f188ad}
+.grid{display:grid;grid-template-columns:minmax(400px,.88fr) minmax(500px,1.12fr);gap:26px;align-items:start}
+.card{background:rgba(255,255,255,.96);border:1px solid #ffe1ec;border-radius:28px;box-shadow:0 18px 48px rgba(222,87,139,.12)}
+.calendar{padding:28px 32px 34px}.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:25px}.cal-head h2{font-size:24px;margin:0;color:#4a3540}
+.nav{width:44px;height:44px;border:1px solid #f7d3df;border-radius:50%;background:#fff;color:#d95b8a;font-size:25px;box-shadow:0 5px 13px rgba(215,91,137,.1)}
+.week,.days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}.week{margin-bottom:10px;color:#8e7a82;font-size:13px;font-weight:700}.week span:first-child{color:#ea728f}.week span:last-child{color:#7191bb}
+.day{position:relative;aspect-ratio:1;border:0;background:transparent;border-radius:50%;color:#40353a;font-weight:650}.day.muted{color:#d8ccd1}.day:hover:not(.muted){background:#fff0f5;color:#d94f83}.day.selected{color:white;background:linear-gradient(145deg,#f48fb5,#df5f90);box-shadow:0 7px 18px rgba(223,95,144,.28)}
+.day.has-items:after{content:"";position:absolute;bottom:8px;left:50%;width:4px;height:4px;border-radius:50%;background:#eb77a1;transform:translateX(-50%)}.day.selected:after{background:white}
+.tasks{padding:30px 34px}.date-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.date-row h2{margin:0;font-size:24px}.today{padding:5px 11px;border-radius:999px;background:#ffe4ee;color:#d84f82;font-size:12px;font-weight:800}
+.progress-card{margin:26px 0 22px;padding:18px;border-radius:18px;background:#fff9fb;box-shadow:0 7px 18px rgba(211,107,147,.09)}.progress-label{display:flex;justify-content:space-between;color:#8b6c78;font-size:14px;font-weight:700}.progress-count{color:#d95787}.track{height:8px;margin-top:12px;border-radius:20px;background:#f5e8ed;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,#f3a0be,#df5f90);transition:width .25s}
+.add-form{display:grid;grid-template-columns:96px 1fr 44px;gap:7px;margin:0 0 8px}.add-form select,.add-form input{min-width:0;height:40px;border:1px solid #f1ceda;border-radius:12px;background:#fffafd;color:#604751;padding:0 10px;outline:none}.add-form input:focus,.add-form select:focus{border-color:#e87fa5;box-shadow:0 0 0 2px #fff0f5}.add{border:0;border-radius:12px;background:linear-gradient(145deg,#f28db2,#dc5c8d);color:white;font-size:23px;box-shadow:0 5px 13px rgba(220,92,141,.2)}.state-note{display:none;margin:0 0 9px;padding:9px 11px;border-radius:11px;background:#fff3f7;color:#b86683;font-size:12px;text-align:center}
+.section-title{display:flex;align-items:center;gap:8px;margin:20px 2px 10px;color:#5b424c;font-size:15px;font-weight:800}.section-title:first-of-type{margin-top:4px}.section-title small{color:#c18299;font-size:12px;font-weight:600}.section-title.sub{padding-top:6px;border-top:1px solid #f8e3eb}
+.list{display:flex;flex-direction:column;gap:5px}.item{display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 10px;border:1px solid #fff0f5;border-radius:13px;background:white;font-size:14px}.item.sub-item{background:#fff9fb;border-style:dashed}.check{flex:none;width:20px;height:20px;border:2px solid #e8a2bb;border-radius:50%;background:white;color:white;display:grid;place-items:center;font-size:12px}.item.done .check{border-color:#e26392;background:#e26392}.item.done .check:after{content:"✓"}.item.done .text{text-decoration:line-through;color:#bba5ad}.text{flex:1}.sub-badge{flex:none;padding:2px 7px;border-radius:999px;background:#fff0f5;color:#c06b8a;font-size:10px;font-weight:700}.remove{flex:none;border:0;background:transparent;color:#c99aa9;font-size:18px;padding:0 3px}.remove:hover{color:#db5685}.check:disabled,.remove:disabled,.add-form :disabled{cursor:not-allowed;opacity:.45}
+.empty{text-align:center;padding:35px;color:#b69aa5}
+@media(max-width:860px){html,body{overflow:visible}.app{padding:8px 4px 42px}.hero{margin-bottom:16px}.hero h1{font-size:30px}.hero p{font-size:14px}.grid{grid-template-columns:1fr;gap:14px}.calendar,.tasks{padding:18px}.card{border-radius:22px}.cal-head{margin-bottom:16px}.cal-head h2,.date-row h2{font-size:20px}.progress-card{margin:16px 0 10px;padding:14px}.add-form{grid-template-columns:82px 1fr 40px}.add-form select,.add-form input{height:36px;padding:0 7px;font-size:12px}.section-title{margin:11px 2px 6px}.section-title.sub{padding-top:3px}.list{gap:4px}.item{min-height:34px;padding:4px 8px}.day.has-items:after{bottom:4px}}
+@media(max-width:430px){.calendar,.tasks{padding:16px 14px}.day{font-size:13px}.hero h1{font-size:27px}.hero p{padding:0 15px}.tasks{padding-bottom:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero"><h1>🌸 오늘의 금복이 성장케어</h1><p>건강한 유진이와 금복이를 위한 영양소 보충<span class="heart">♡</span></p></header>
+  <main class="grid">
+    <section class="card calendar" aria-label="월간 캘린더">
+      <div class="cal-head"><button class="nav" id="prev" aria-label="이전 달로 이동">‹</button><h2 id="monthTitle"></h2><button class="nav" id="next" aria-label="다음 달로 이동">›</button></div>
+      <div class="week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="days" id="days"></div>
+    </section>
+    <section class="card tasks" aria-label="할 일 체크리스트">
+      <div class="date-row"><h2 id="dateTitle"></h2><span class="today" id="todayBadge">TODAY</span></div>
+      <div class="progress-card"><div class="progress-label"><span>오늘의 성장도</span><span class="progress-count" id="progressText">0 / 0 (0%)</span></div><div class="track"><div class="bar" id="bar"></div></div></div>
+      <div class="state-note" id="stateNote"></div>
+      <form class="add-form" id="addForm"><select id="itemType" aria-label="추가 항목 종류"><option value="main">메인</option><option value="sub">서브</option></select><input id="newItem" required maxlength="50" placeholder="체크리스트 추가..." aria-label="새 체크리스트"><button class="add" type="submit" aria-label="체크리스트 추가">+</button></form>
+      <div class="section-title" id="mainTitle">메인 체크리스트 <small>성장도에 반영돼요</small></div>
+      <div class="list" id="mainList"></div>
+      <div class="section-title sub" id="subTitle">서브 체크리스트 <small>성장도에 포함되지 않아요</small></div>
+      <div class="list" id="subList"></div>
+    </section>
+  </main>
+</div>
+<script>
+const MAIN_ITEMS=['갑상선 약 1알','유산균 1알','엽산 1알','오메가3 1알','철분제 1포','칼마디 2알','비타민D 1알'];
+const SUB_ITEMS=['알긴엔액 1포','디클렉틴 1알'];
+const pad=n=>String(n).padStart(2,'0'); const key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=new Date(); today.setHours(0,0,0,0); let selected=new Date(today); let view=new Date(today.getFullYear(),today.getMonth(),1);
+const START_DATE=new Date(2026,5,21);START_DATE.setHours(0,0,0,0);
+const STORAGE_KEY='geumboki-growth-care-v2';let data={};try{data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch(e){data={}}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function isBeforeStart(d){const day=new Date(d);day.setHours(0,0,0,0);return day<START_DATE}
+function isLocked(d){const deadline=new Date(d);deadline.setHours(0,0,0,0);deadline.setTime(deadline.getTime()+48*60*60*1000);return new Date()>deadline}
+function itemsFor(d){const k=key(d);if(isBeforeStart(d)){data[k]=[];return data[k]}const existing=data[k]||[],template=[...MAIN_ITEMS.map((text,i)=>({id:`m${i}`,text,type:'main'})),...SUB_ITEMS.map((text,i)=>({id:`s${i}`,text,type:'sub'}))],defaults=template.map(item=>({...item,done:existing.find(old=>old.id===item.id)?.done||false})),customs=existing.filter(item=>String(item.id).startsWith('c-'));data[k]=[...defaults,...customs];return data[k]}
+function renderCalendar(){document.getElementById('monthTitle').textContent=`${view.getFullYear()}년 ${pad(view.getMonth()+1)}월`;const root=document.getElementById('days');root.innerHTML='';const first=new Date(view.getFullYear(),view.getMonth(),1),start=new Date(first);start.setDate(1-first.getDay());for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const b=document.createElement('button');b.type='button';b.className='day';b.textContent=d.getDate();b.setAttribute('aria-label',`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`);if(d.getMonth()!==view.getMonth())b.classList.add('muted');if(key(d)===key(selected))b.classList.add('selected');if(data[key(d)]?.some(x=>x.done))b.classList.add('has-items');b.onclick=()=>{selected=d;view=new Date(d.getFullYear(),d.getMonth(),1);render()};root.appendChild(b)}}
+function renderItem(item,root,locked){const row=document.createElement('div');row.className='item'+(item.done?' done':'')+(item.type==='sub'?' sub-item':'');const check=document.createElement('button');check.type='button';check.className='check';check.disabled=locked;check.setAttribute('aria-label',`${item.text} ${item.done?'완료 취소':'완료 표시'}`);check.onclick=()=>{if(locked)return;item.done=!item.done;save();renderTasks();renderCalendar();requestHeight()};const text=document.createElement('span');text.className='text';text.textContent=item.text;row.append(check,text);if(item.type==='sub'){const badge=document.createElement('span');badge.className='sub-badge';badge.textContent='SUB';row.appendChild(badge)}if(String(item.id).startsWith('c-')){const remove=document.createElement('button');remove.type='button';remove.className='remove';remove.disabled=locked;remove.textContent='×';remove.setAttribute('aria-label',`${item.text} 삭제`);remove.onclick=()=>{if(locked)return;data[key(selected)]=itemsFor(selected).filter(x=>x.id!==item.id);save();render()};row.appendChild(remove)}root.appendChild(row)}
+function renderTasks(){const before=isBeforeStart(selected),locked=isLocked(selected),editable=!before&&!locked,items=itemsFor(selected),main=items.filter(x=>x.type==='main'),sub=items.filter(x=>x.type==='sub');document.getElementById('dateTitle').textContent=`${selected.getFullYear()}년 ${pad(selected.getMonth()+1)}월 ${pad(selected.getDate())}일`;document.getElementById('todayBadge').style.display=key(selected)===key(today)?'inline-block':'none';const done=main.filter(x=>x.done).length,pct=main.length?Math.round(done/main.length*100):0;document.getElementById('progressText').textContent=`${done} / ${main.length} (${pct}%)`;document.getElementById('bar').style.width=pct+'%';const form=document.getElementById('addForm'),note=document.getElementById('stateNote'),mainTitle=document.getElementById('mainTitle'),subTitle=document.getElementById('subTitle');form.style.display=before?'none':'grid';[...form.elements].forEach(el=>el.disabled=!editable);note.style.display=(before||locked)?'block':'none';note.textContent=before?'체크리스트는 2026년 6월 21일부터 시작돼요.':'해당 날짜는 48시간이 지나 수정할 수 없어요.';mainTitle.style.display=before?'none':'flex';subTitle.style.display=before?'none':'flex';const mainRoot=document.getElementById('mainList'),subRoot=document.getElementById('subList');mainRoot.innerHTML='';subRoot.innerHTML='';main.forEach(item=>renderItem(item,mainRoot,locked));sub.forEach(item=>renderItem(item,subRoot,locked))}
+function requestHeight(){setTimeout(()=>window.parent.postMessage({isStreamlitMessage:true,type:'streamlit:setFrameHeight',height:document.documentElement.scrollHeight+24},'*'),50)}
+function render(){renderCalendar();renderTasks();requestHeight()}
+document.getElementById('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);renderCalendar()};document.getElementById('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);renderCalendar()};document.getElementById('addForm').onsubmit=e=>{e.preventDefault();if(isBeforeStart(selected)||isLocked(selected))return;const input=document.getElementById('newItem'),text=input.value.trim(),type=document.getElementById('itemType').value;if(!text)return;itemsFor(selected).push({id:`c-${Date.now()}`,text,type,done:false});input.value='';save();render()};window.addEventListener('load',requestHeight);window.addEventListener('resize',requestHeight);render();save();
+</script>
+</body></html>
+""")
+
+components.html(html, height=1180, scrolling=True)
